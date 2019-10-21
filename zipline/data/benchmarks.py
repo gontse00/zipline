@@ -14,6 +14,7 @@
 # limitations under the License.
 import pandas as pd
 import requests
+import yfinance as yf
 
 
 def get_benchmark_returns(symbol):
@@ -29,14 +30,10 @@ def get_benchmark_returns(symbol):
     The data is provided by IEX (https://iextrading.com/), and we can
     get up to 5 years worth of data.
     """
-    r = requests.get(
-        'https://api.iextrading.com/1.0/stock/{}/chart/5y'.format(symbol)
-    )
-    data = r.json()
-
-    df = pd.DataFrame(data)
-
-    df.index = pd.DatetimeIndex(df['date'])
-    df = df['close']
+    df = yf.Ticker(symbol)
+    df = df.history(period="5y")
+     
+    #df.index = pd.DatetimeIndex(df['Date'])
+    df = df['Close']
 
     return df.sort_index().tz_localize('UTC').pct_change(1).iloc[1:]
